@@ -6,13 +6,13 @@
       "name": "req",
       "type": "httpTrigger",
       "direction": "in",
-      "route": "GameState/{id}",
+      "route": "StartGame/{name}",
       "methods": [
         "get"
       ]
     },
     {
-      "name": "res",
+      "name": "$return",
       "type": "http",
       "direction": "out"
     }
