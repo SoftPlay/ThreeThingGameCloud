@@ -34,7 +34,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, string
     
     var gameGuid = Guid.NewGuid();
     
-    CloudBlockBlob blockBlob = container.GetBlockBlobReference(gameGuid);
+    CloudBlockBlob blockBlob = container.GetBlockBlobReference(gameGuid.ToString());
     blockBlob.UploadText("{ state: Started }");
 
     // Fetching the name from the path parameter in the request URL
