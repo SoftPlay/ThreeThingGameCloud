@@ -47,25 +47,9 @@ let Run(req: HttpRequestMessage, id: string, log: TraceWriter) =
 
         // Retrieve reference to a blob named "myblob".
         let blockBlob = container.GetBlockBlobReference(id);
-
+        
         let! blobContents = blockBlob.DownloadTextAsync() |> Async.AwaitTask
 
         return req.CreateResponse(HttpStatusCode.OK, blobContents);
 
-(*        // Set name to query string
-        let name =
-            req.GetQueryNameValuePairs()
-            |> Seq.tryFind (fun q -> q.Key = "name")
-
-        match name with
-        | Some x ->
-            return req.CreateResponse(HttpStatusCode.OK, "Hello " + x.Value);
-        | None ->
-            let! data = req.Content.ReadAsStringAsync() |> Async.AwaitTask
-
-            if not (String.IsNullOrEmpty(data)) then
-                let named = JsonConvert.DeserializeObject<Named>(data)
-                return req.CreateResponse(HttpStatusCode.OK, "Hello " + named.name);
-            else
-                return req.CreateResponse(HttpStatusCode.BadRequest, "Specify a Name value");*)
     } |> Async.RunSynchronously

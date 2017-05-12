@@ -17,6 +17,8 @@ using System.Configuration;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 
+
+
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, string name, TraceWriter log)
 {    
     log.Info("C# HTTP trigger function processed a request.");
@@ -35,7 +37,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, string
     var gameGuid = Guid.NewGuid();
     
     CloudBlockBlob blockBlob = container.GetBlockBlobReference(gameGuid.ToString());
-    blockBlob.UploadText("{ state: Started }");
+    blockBlob.UploadText("{ state: \"WaitingForPlayers\" }");
 
     // Fetching the name from the path parameter in the request URL
     return req.CreateResponse(HttpStatusCode.OK, "Hello " + name + gameGuid);

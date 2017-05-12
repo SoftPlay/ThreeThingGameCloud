@@ -2,17 +2,17 @@
   "disabled": false,
   "bindings": [
     {
-      "authLevel": "anonymous",
+      "authLevel": "function",
       "name": "req",
       "type": "httpTrigger",
       "direction": "in",
-      "route": "StartGame/{name}",
+      "route": "JoinGame/{id}",
       "methods": [
         "post"
       ]
     },
     {
-      "name": "$return",
+      "name": "res",
       "type": "http",
       "direction": "out"
     }
