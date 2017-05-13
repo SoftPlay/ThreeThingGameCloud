@@ -29,7 +29,8 @@ open Microsoft.Azure.WebJobs.Host
 open Microsoft.WindowsAzure.Storage
 open Microsoft.WindowsAzure.Storage.Blob
 
-
+#r "System.Runtime.Serialization.dll"
+open System.Runtime.Serialization
 
 type BreathRecord = {
     name: string;
@@ -37,9 +38,21 @@ type BreathRecord = {
     durationSeconds: float;
 }
 
+[<DataContract>]
 type BreathSummary = {
+    [<field: DataMember(Name="name")>]
     name: string;
+    [<field: DataMember(Name="count")>]
     count: int;
+
+    [<field: DataMember(Name="averageDuration")>]
+    averageDuration: float;
+
+    [<field: DataMember(Name="minPressure")>]
+    minPressure: float;
+
+    [<field: DataMember(Name="maxPressure")>]
+    maxPressure: float;
 }
 
 let Run(req: HttpRequestMessage, name: string, log: TraceWriter) =
@@ -66,8 +79,13 @@ let Run(req: HttpRequestMessage, name: string, log: TraceWriter) =
         log.Info(sprintf 
             "F# HTTP trigger function processed a request.")
 
-
-        let userData  = container.ListBlobs(name)
+        //let blob = container.GetBlockBlobReference(sprintf "%s" name)
+        //blob.DownloadTextAsync();
+        let userData  = 
+                    container.ListBlobs(name)
+                    |> Seq.map (fun x -> 
+                                    x.Container.GetBlockBlobReference(x.StorageUri.ToString())
+                                    |> fun y -> JsonConvert.DeserializeObject<BreathRecord>(y.DownloadText()))
 
         let result = 
             { 
@@ -75,8 +93,25 @@ let Run(req: HttpRequestMessage, name: string, log: TraceWriter) =
                 count =        
                         userData
                         |> Seq.length
+                averageDuration = 
+                        userData
+                        |> Seq.averageBy (fun x -> x.durationSeconds) 
+                minPressure =
+                        userData
+                        |> Seq.map (fun x -> x.pressure |> Array.min) 
+                        |> Seq.min
+                maxPressure =
+                        userData
+                        |> Seq.map (fun x -> x.pressure |> Array.max) 
+                        |> Seq.max
             }
+ 
 
-        return req.CreateResponse(HttpStatusCode.OK, JsonConvert.ToString(result));
+        log.Info(sprintf 
+            "F# HTTP trigger function processed a request.")
+
+        let json =  JsonConvert.SerializeObject(result)
+
+        return req.CreateResponse(HttpStatusCode.OK, result);
         
     } |> Async.RunSynchronously
