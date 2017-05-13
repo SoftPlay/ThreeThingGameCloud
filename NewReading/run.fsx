@@ -46,8 +46,6 @@ let Run(req: HttpRequestMessage, log: TraceWriter) =
         
         let breathRecord = JsonConvert.DeserializeObject<BreathRecord>(data)
 
-        log.Info(ConfigurationManager.AppSettings.["AzureWebJobsStorage"])
-
         // Retrieve storage account from connection string.
         let storageAccount = 
                     CloudStorageAccount.Parse(ConfigurationManager.AppSettings.["AzureWebJobsStorage"])
