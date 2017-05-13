@@ -37,36 +37,46 @@ type BreathRecord = {
     durationSeconds: float;
 }
 
-let Run(req: HttpRequestMessage, log: TraceWriter) =
+type BreathSummary = {
+    name: string;
+    count: int;
+}
+
+let Run(req: HttpRequestMessage, name: string, log: TraceWriter) =
     async {
-        log.Info(sprintf 
-            "F# HTTP trigger function processed a request.")
 
         let! data = req.Content.ReadAsStringAsync() |> Async.AwaitTask
         
-        let breathRecord = JsonConvert.DeserializeObject<BreathRecord>(data)
+        //let breathRecord = JsonConvert.DeserializeObject<BreathRecord>(data)
 
         // Retrieve storage account from connection string.
         let storageAccount = 
                     CloudStorageAccount.Parse(ConfigurationManager.AppSettings.["AzureWebJobsStorage"])
         
+        log.Info(sprintf 
+            "F# HTTP trigger function processed a request.")
+
         // Create the blob client.
         let blobClient = storageAccount.CreateCloudBlobClient();
 
         // Retrieve reference to a previously created container.
         let container = blobClient.GetContainerReference("breaths");
-        
         container.CreateIfNotExists() |> ignore
-        let dt = DateTime.UtcNow;
-        // Retrieve reference to a blob named "myblob".
-        let blockBlob = container.GetBlockBlobReference(breathRecord.name + "/" + dt.ToFileTime().ToString());
 
-        blockBlob.UploadText(data)
+        log.Info(sprintf 
+            "F# HTTP trigger function processed a request.")
+
+
+        let userData  = container.ListBlobs(name)
+
+        let result = 
+            { 
+                name = name
+                count =        
+                        userData
+                        |> Seq.length
+            }
+
+        return req.CreateResponse(HttpStatusCode.OK, JsonConvert.ToString(result));
         
-
-        if not (String.IsNullOrEmpty(data)) then
-            
-            return req.CreateResponse(HttpStatusCode.OK, "Thanks " + breathRecord.name + ", well done");
-        else
-            return req.CreateResponse(HttpStatusCode.BadRequest, "Specify a Name value");
     } |> Async.RunSynchronously
