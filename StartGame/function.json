@@ -15,6 +15,12 @@
       "name": "$return",
       "type": "http",
       "direction": "out"
+    },
+    {
+      "name": "queueItem",
+      "type": "queue",
+      "queueName": "gameEvents",
+      "direction": "out"
     }
   ]
 }
